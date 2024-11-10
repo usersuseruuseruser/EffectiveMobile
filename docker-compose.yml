@@ -1,0 +1,22 @@
+﻿services:
+  effectivemobile:
+    image: effectivemobile
+    build:
+      context: .
+      dockerfile: EffectiveMobile/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+        - ConnectionStrings__DefaultConnection=Host=db;Database=postgres;Username=postgres;Password=postgres
+  db:
+    image: postgres:latest
+    ports:
+        - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres 
+      POSTGRES_DB: postgres
+    volumes:
+      - C://Random/dump:/tmp
