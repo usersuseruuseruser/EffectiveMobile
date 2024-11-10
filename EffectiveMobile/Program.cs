@@ -15,7 +15,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddEnvironmentVariables();
-        builder.AddSerilogWithPostgresSink();
+        builder.AddSerilog();
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();

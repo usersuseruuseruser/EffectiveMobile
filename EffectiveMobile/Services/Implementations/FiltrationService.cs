@@ -13,7 +13,9 @@ public class FiltrationService: IFiltrationService
         _db = db;
     }
 
-    public async Task<List<FilteredDelivery>> FilterDeliveries(string district, DateTime firstDeliveryDate)
+    public async Task<List<FilteredDelivery>> FilterDeliveries(
+        string district,
+        DateTime firstDeliveryDate)
     {
         // для наглядности чтобы всё не лежало в куче при просмотре результата
         await _db.FilteredDeliveries.ExecuteDeleteAsync();

@@ -1,5 +1,6 @@
 ﻿services:
   effectivemobile:
+    container_name: API
     image: effectivemobile
     build:
       context: .
@@ -8,9 +9,12 @@
       - "8080:8080"
     depends_on:
       - db
+      - elasticsearch
     environment:
         - ConnectionStrings__DefaultConnection=Host=db;Database=postgres;Username=postgres;Password=postgres
+        - ElasticsearchUrl=http://elasticsearch:9200
   db:
+    container_name: db
     image: postgres:latest
     ports:
         - "5434:5432"
@@ -18,5 +22,26 @@
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres 
       POSTGRES_DB: postgres
+      
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+    ports:
+      - "9200:9200"
     volumes:
-      - C://Random/dump:/tmp
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    environment:
+      - discovery.type=single-node 
+      - xpack.security.enabled=false
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:8.7.1
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+volumes:
+  elasticsearch-data:

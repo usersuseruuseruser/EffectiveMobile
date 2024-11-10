@@ -10,6 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="CsvHelper" Version="33.0.1" />
+        <PackageReference Include="Elastic.Serilog.Sinks" Version="8.12.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.10">
           <PrivateAssets>all</PrivateAssets>
