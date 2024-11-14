@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Net;
 using CsvHelper;
 using CsvHelper.TypeConversion;
 using EffectiveMobile.Database;
@@ -15,12 +16,13 @@ public class FiltrationServiceTests:
     private readonly AppDbContext _db;
     private readonly Func<Task> _resetDb;
     private readonly FiltrationService _filtrationService;
-
+    private readonly IntegrationTestWebAppFactory _factory;
     public FiltrationServiceTests(IntegrationTestWebAppFactory factory)
     {
         _db = factory.Db;
         _resetDb = factory.ResetDatabase;
         _filtrationService = new FiltrationService(_db);
+        _factory = factory;
     }
 
     public Task InitializeAsync()
@@ -35,7 +37,7 @@ public class FiltrationServiceTests:
     }
     
     [Fact]
-    public async Task FiltrationStarted_WithExistingSubsequentDeliveries_TheyAllReturned()
+    public async Task FiltrationStarted_WithExistingSubsequentDeliveries_TheyAllReturnedAndSaved()
     {
         // arrange
         await SeedDeliveriesFromCsvAsync("SeedData/InitialDeliveries.csv");
@@ -66,6 +68,31 @@ public class FiltrationServiceTests:
         Assert.Empty(result);
         
         Assert.Empty(savedData);
+    }
+
+    [Fact]
+    public async Task DeliveriesAreFiltered_WithExistingSubsequentDeliveries_TheyAllReturnedAndSavedE2E()
+    {
+        // arrange
+        await SeedDeliveriesFromCsvAsync("SeedData/InitialDeliveries.csv");
+        var client = _factory.CreateClient();
+        
+        // act
+        var response = await client.GetAsync("filter-data?district=B&firstDeliveryDate=2023-10-30 09:25:00");
+        var savedData = await _db.FilteredDeliveries.ToListAsync();
+        // serilog сбрасывает логи в бд асинхронно и хз через какой промежуток времени, экспериментальным
+        // путем выяснилось что 5 секунд достаточно чтобы он сбросил их. ****** какой-то
+        await Task.Delay(5000);
+        var savedLogs = await _db.Logs.ToListAsync();
+        
+        // assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        
+        Assert.Contains(savedData, d => d.Id == 2);
+        Assert.Contains(savedData, d => d.Id == 2);
+        
+        Assert.Contains(savedLogs, l => l.RenderedMessage.Contains("Random custom logging"));
+        Assert.Contains(savedLogs, l => l.RenderedMessage.Contains("Something went wrong kek"));
     }
 
     private async Task SeedDeliveriesFromCsvAsync(string filePath)

@@ -5,6 +5,7 @@ using EffectiveMobile.ProgramConfigurationExtentions;
 using EffectiveMobile.Services;
 using EffectiveMobile.Services.Implementations;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Serilog;
 
 namespace EffectiveMobile;
@@ -15,7 +16,6 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Configuration.AddEnvironmentVariables();
-        builder.AddSerilog();
 
         builder.Services.AddControllers();
         builder.Services.AddEndpointsApiExplorer();
@@ -25,9 +25,13 @@ public class Program
         builder.Services.AddScoped<IFiltrationService, FiltrationService>();
         builder.Services.AddDbContext<AppDbContext>(c =>
         {
-            c.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+            var dataSourceBuilder = new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("DefaultConnection"));
+            dataSourceBuilder.EnableDynamicJson();
+            
+            c.UseNpgsql(dataSourceBuilder.Build());
         });
         builder.Services.AddHostedService<MigrateAndSeedDb>();
+        builder.AddSerilog();
         builder.Host.UseSerilog();
 
         var app = builder.Build();

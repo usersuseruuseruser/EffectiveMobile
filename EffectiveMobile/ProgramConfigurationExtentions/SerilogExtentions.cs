@@ -14,15 +14,18 @@ public static class SerilogExtentions
     {
         var configuration = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json", false, true)
-            .AddEnvironmentVariables()
+            .AddInMemoryCollection(
+            [
+                new KeyValuePair<string, string?>("ElasticsearchUrl",
+                    builder.Configuration["ElasticsearchUrl"]),
+                new KeyValuePair<string, string?>("ConnectionStrings:DefaultConnection",
+                    builder.Configuration.GetConnectionString("DefaultConnection"))
+            ])
             .Build();
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Elasticsearch(new List<Uri>
             {
                 new(configuration["ElasticsearchUrl"]!)
-            }, opts =>
-            {
-                opts.BootstrapMethod = BootstrapMethod.Failure;
             })
             .ReadFrom.Configuration(configuration)
             .CreateLogger();

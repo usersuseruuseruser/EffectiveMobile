@@ -42,4 +42,11 @@ public class FiltrationController: ControllerBase
         
         return Ok(filteredDeliveries);
     }
+    
+    [HttpGet("get-logs")]
+    public async Task<IActionResult> GetLogs()
+    {
+        var logs = await _db.Logs.ToListAsync();
+        return Ok(logs);
+    }
 }

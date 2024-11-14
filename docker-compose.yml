@@ -8,8 +8,10 @@
     ports:
       - "8080:8080"
     depends_on:
-      - db
-      - elasticsearch
+      db:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
     environment:
         - ConnectionStrings__DefaultConnection=Host=db;Database=postgres;Username=postgres;Password=postgres
         - ElasticsearchUrl=http://elasticsearch:9200
@@ -22,6 +24,8 @@
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres 
       POSTGRES_DB: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       
   elasticsearch:
     container_name: elasticsearch
@@ -33,6 +37,11 @@
     environment:
       - discovery.type=single-node 
       - xpack.security.enabled=false
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9200/_cluster/health" ]
+      interval: 3s
+      timeout: 10s
+      retries: 5
   kibana:
     container_name: kibana
     image: docker.elastic.co/kibana/kibana:8.7.1
