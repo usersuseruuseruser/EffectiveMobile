@@ -23,12 +23,12 @@ public class Program
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
         builder.Services.AddProblemDetails();
         builder.Services.AddScoped<IFiltrationService, FiltrationService>();
+        var dataSource = new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("DefaultConnection"))
+            .EnableDynamicJson()
+            .Build();
         builder.Services.AddDbContext<AppDbContext>(c =>
         {
-            var dataSourceBuilder = new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("DefaultConnection"));
-            dataSourceBuilder.EnableDynamicJson();
-            
-            c.UseNpgsql(dataSourceBuilder.Build());
+            c.UseNpgsql(dataSource);
         });
         builder.Services.AddHostedService<MigrateAndSeedDb>();
         builder.AddSerilog();

@@ -49,4 +49,12 @@ public class FiltrationController: ControllerBase
         var logs = await _db.Logs.ToListAsync();
         return Ok(logs);
     }
+
+    [HttpGet("get-filtered-data")]
+    public async  Task<IActionResult> HelloWorld()
+    {
+        var data = await _db.FilteredDeliveries.ToListAsync();
+        
+        return Ok(data);
+    }
 }

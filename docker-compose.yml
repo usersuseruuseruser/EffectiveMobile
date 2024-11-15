@@ -38,10 +38,10 @@
       - discovery.type=single-node 
       - xpack.security.enabled=false
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9200/_cluster/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:9200/_cat/health" ]
       interval: 3s
       timeout: 10s
-      retries: 5
+      retries: 10
   kibana:
     container_name: kibana
     image: docker.elastic.co/kibana/kibana:8.7.1
