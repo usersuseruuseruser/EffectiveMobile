@@ -1,4 +1,5 @@
-﻿using EffectiveMobile.Database;
+﻿using System.Diagnostics;
+using EffectiveMobile.Database;
 using EffectiveMobile.Database.Models;
 using EffectiveMobile.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -51,9 +52,13 @@ public class FiltrationController: ControllerBase
     }
 
     [HttpGet("get-filtered-data")]
-    public async  Task<IActionResult> HelloWorld()
+    public async  Task<IActionResult> HelloWorld(CancellationToken cancellationToken)
     {
-        var data = await _db.FilteredDeliveries.ToListAsync();
+        var ts = Stopwatch.GetTimestamp();
+        var data = await _db.FilteredDeliveries.ToListAsync(cancellationToken: cancellationToken);
+        var te = Stopwatch.GetElapsedTime(ts);
+        
+        _logger.LogInformation("Filtered data fetched in {timeElapsed} ms", te);
         
         return Ok(data);
     }

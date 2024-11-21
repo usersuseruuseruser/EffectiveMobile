@@ -28,7 +28,10 @@ public class Program
             .Build();
         builder.Services.AddDbContext<AppDbContext>(c =>
         {
-            c.UseNpgsql(dataSource);
+            c.UseNpgsql(dataSource, ob =>
+            {
+                ob.EnableRetryOnFailure(3, TimeSpan.FromSeconds(2), null);
+            });
         });
         builder.Services.AddHostedService<MigrateAndSeedDb>();
         builder.AddSerilog();

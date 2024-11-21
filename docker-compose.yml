@@ -13,11 +13,12 @@
       elasticsearch:
         condition: service_healthy
     environment:
-        - ConnectionStrings__DefaultConnection=Host=db;Database=postgres;Username=postgres;Password=postgres
+        - ConnectionStrings__DefaultConnection=Host=db;Database=postgres;Username=postgres;Password=postgres;Maximum Pool Size=500
         - ElasticsearchUrl=http://elasticsearch:9200
   db:
     container_name: db
     image: postgres:latest
+    command: -c 'max_connections=500'
     ports:
         - "5434:5432"
     environment:
@@ -26,6 +27,9 @@
       POSTGRES_DB: postgres
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
       
   elasticsearch:
     container_name: elasticsearch
@@ -50,7 +54,34 @@
     depends_on:
       - elasticsearch
     environment:
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  timescaledb:
+    image: timescale/timescaledb:2.14.2-pg16
+    command: postgres -c 'max_connections=500'
+    restart: always
+    ports:
+      - "5437:5432"
+    volumes:
+      - nb_studio_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: nb_studio_db
+      POSTGRES_USER: timescaledb
+      POSTGRES_PASSWORD: timescaledb
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d 'user=timescaledb dbname=nb_studio_db'" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 5s
+  nbomber-studio:
+    image: nbomberdocker/nbomber-studio:latest
+    ports:
+      - "5333:8080"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+    environment:
+      DBSETTINGS:CONNECTIONSTRING: "Host=timescaledb;Port=5432;Username=timescaledb;Password=timescaledb;Database=nb_studio_db;Pooling=true;"
 volumes:
   elasticsearch-data:
+  nb_studio_data:

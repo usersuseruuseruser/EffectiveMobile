@@ -10,6 +10,7 @@
     <ItemGroup>
       <PackageReference Include="NBomber" Version="5.8.1" />
       <PackageReference Include="NBomber.Http" Version="5.2.0" />
+      <PackageReference Include="NBomber.Sinks.Timescale" Version="0.6.1" />
     </ItemGroup>
 
 </Project>
