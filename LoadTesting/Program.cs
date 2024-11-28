@@ -20,7 +20,7 @@ public class Program
                 return resp;
             })
             .WithLoadSimulations(Simulation.Inject(
-                rate: 150,
+                rate: 800,
                 interval: TimeSpan.FromSeconds(1),
                 during: TimeSpan.FromSeconds(30))
             )

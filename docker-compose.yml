@@ -12,8 +12,6 @@
         condition: service_healthy
       elasticsearch:
         condition: service_healthy
-      prometheus:
-        condition: service_healthy
     environment:
         - ConnectionStrings__DefaultConnection=Host=db;Database=postgres;Username=postgres;Password=postgres;Maximum Pool Size=300
         - ElasticsearchUrl=http://elasticsearch:9200
@@ -59,7 +57,7 @@
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
   timescaledb:
     image: timescale/timescaledb:2.14.2-pg16
-    command: postgres -c 'max_connections=500'
+    command: postgres -c 'max_connections=300'
     restart: always
     ports:
       - "5437:5432"
@@ -92,11 +90,6 @@
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'   
-    healthcheck:
-      test: [ "CMD", "wget", "http://localhost:9090" ]
-      interval: 3s
-      timeout: 10s
-      retries: 5
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -105,8 +98,6 @@
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
-    depends_on:
-      - prometheus
 volumes:
   elasticsearch-data:
   nb_studio_data:
