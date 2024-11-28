@@ -15,6 +15,15 @@
     environment:
         - ConnectionStrings__DefaultConnection=Host=db;Database=postgres;Username=postgres;Password=postgres;Maximum Pool Size=300
         - ElasticsearchUrl=http://elasticsearch:9200
+        - JAEGER_AGENT_HOST=http://jaeger:4317
+  effectivemobile-second:
+    container_name: API-Second
+    image: effectivemobile-second
+    build:
+      context: .
+      dockerfile: EffectiveMobile.SecondService/Dockerfile
+    environment:
+      - JAEGER_AGENT_HOST=http://jaeger:4317
   db:
     container_name: db
     image: postgres:latest
@@ -98,7 +107,24 @@
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+  rabbitmq:
+    image: heidiks/rabbitmq-delayed-message-exchange:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
 volumes:
   elasticsearch-data:
   nb_studio_data:
   grafana-data:
+  rabbitmq:

@@ -2,9 +2,11 @@
 using EffectiveMobile.Database;
 using EffectiveMobile.Metrics;
 using EffectiveMobile.Services;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Prometheus;
+using Shared;
 
 namespace EffectiveMobile.Controllers;
 
@@ -15,17 +17,20 @@ public class FiltrationController: ControllerBase
     private readonly ILogger<FiltrationController> _logger;
     private readonly IFiltrationService _filtrationService;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IPublishEndpoint _endpoint;
     public FiltrationController(
         AppDbContext db,
         ILogger<FiltrationController> logger,
         IFiltrationService filtrationService,
-        IHttpClientFactory httpClientFactory)
+        IHttpClientFactory httpClientFactory,
+        IPublishEndpoint endpoint)
     {
         _db = db;
         _logger = logger;
         _filtrationService = filtrationService;
         _httpClientFactory = httpClientFactory;
-        
+        _endpoint = endpoint;
+
         MetricsRegistry.ControllerCreationCounter.Inc();
     }
 
@@ -63,6 +68,8 @@ public class FiltrationController: ControllerBase
         var te = Stopwatch.GetElapsedTime(ts);
         
         _logger.LogInformation("Filtered data fetched in {timeElapsed} ms", te);
+
+        await _endpoint.Publish(new SomeData(), cancellationToken);
         
         return Ok(data);
     }

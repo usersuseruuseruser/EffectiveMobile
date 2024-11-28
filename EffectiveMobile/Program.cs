@@ -4,8 +4,12 @@ using EffectiveMobile.Inftrastructure;
 using EffectiveMobile.ProgramConfigurationExtentions;
 using EffectiveMobile.Services;
 using EffectiveMobile.Services.Implementations;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using OpenTelemetry.Exporter;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Prometheus;
 using Serilog;
 
@@ -29,29 +33,22 @@ public class Program
         builder.Services.AddHealthChecks()
             .AddCheck<Healthcheck>(nameof(Healthcheck))
             .ForwardToPrometheus();
-        // builder.Services.AddOpenTelemetry();
-        //         .WithMetrics(metrics =>
-        //         {
-        //             metrics
-        //                 .AddAspNetCoreInstrumentation()
-        //                 .AddHttpClientInstrumentation();
-        //             metrics
-        //                 .AddPrometheusExporter();
-        //         });
-        //         .WithTracing(tracing =>
-        //     {
-        //         tracing
-        //             .AddAspNetCoreInstrumentation()
-        //             .AddHttpClientInstrumentation()
-        //             .AddEntityFrameworkCoreInstrumentation();
-        //
-        //         tracing.AddOtlpExporter(c =>
-        //         {
-        //             var uri = builder.Configuration["JAEGER_AGENT_HOST"];
-        //             c.Endpoint = new Uri(uri!);
-        //             c.Protocol = OtlpExportProtocol.Grpc;
-        //         });
-        //     })
+        builder.Services
+            .AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService("EffectiveMobile.First"))
+            .WithTracing(tracing =>
+            {
+                tracing
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddEntityFrameworkCoreInstrumentation(c => c.SetDbStatementForText = true)
+                    .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName);
+                
+                tracing.AddOtlpExporter(c =>
+                {
+                    c.Endpoint = new Uri(builder.Configuration["JAEGER_AGENT_HOST"]!);
+                });
+            });
         var dataSource = new NpgsqlDataSourceBuilder(builder.Configuration.GetConnectionString("DefaultConnection"))
             .EnableDynamicJson()
             .Build();
@@ -65,7 +62,22 @@ public class Program
         builder.Services.AddHostedService<MigrateAndSeedDb>();
         builder.AddSerilog();
         builder.Host.UseSerilog();
-
+        builder.Services.AddMassTransit(c =>
+        {
+            c.SetKebabCaseEndpointNameFormatter();
+            
+            c.UsingRabbitMq((ctx, cnf) =>
+            {
+                cnf.Host("rabbitmq", "/", h =>
+                {
+                    h.Username("admin");
+                    h.Password("admin");
+                });
+                
+                cnf.ConfigureEndpoints(ctx);
+            });
+        });
+        
         var app = builder.Build();
         if (app.Environment.IsDevelopment())
         {
@@ -74,7 +86,6 @@ public class Program
         }
 
         app.UseHttpMetrics();
-        // app.MapPrometheusScrapingEndpoint();
         // обязательно после!
         app.UseExceptionHandler();
         app.MapControllers();

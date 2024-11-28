@@ -12,6 +12,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LoadTesting", "LoadTesting\LoadTesting.csproj", "{3B811C4E-D1F8-4E69-AD22-F1056A4CA354}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EffectiveMobile.SecondService", "EffectiveMobile.SecondService\EffectiveMobile.SecondService.csproj", "{C721F626-92ED-486A-9E20-D4428893A006}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{4F4D713A-0F79-49F8-B05F-658C5304DBA7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +34,13 @@ Global
 		{3B811C4E-D1F8-4E69-AD22-F1056A4CA354}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B811C4E-D1F8-4E69-AD22-F1056A4CA354}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B811C4E-D1F8-4E69-AD22-F1056A4CA354}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C721F626-92ED-486A-9E20-D4428893A006}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C721F626-92ED-486A-9E20-D4428893A006}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C721F626-92ED-486A-9E20-D4428893A006}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C721F626-92ED-486A-9E20-D4428893A006}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F4D713A-0F79-49F8-B05F-658C5304DBA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F4D713A-0F79-49F8-B05F-658C5304DBA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F4D713A-0F79-49F8-B05F-658C5304DBA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F4D713A-0F79-49F8-B05F-658C5304DBA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
