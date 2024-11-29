@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using EffectiveMobile.Database;
+using EffectiveMobile.Database.Models;
 using EffectiveMobile.Metrics;
 using EffectiveMobile.Services;
 using MassTransit;
@@ -18,6 +19,8 @@ public class FiltrationController: ControllerBase
     private readonly IFiltrationService _filtrationService;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IPublishEndpoint _endpoint;
+    // TODO: а куда это лучше девать?
+    private readonly ActivitySource _activitySource = new("EffectiveMobile.FiltrationController");
     public FiltrationController(
         AppDbContext db,
         ILogger<FiltrationController> logger,
@@ -63,12 +66,11 @@ public class FiltrationController: ControllerBase
     [HttpGet("get-filtered-data")]
     public async  Task<IActionResult> HelloWorld(CancellationToken cancellationToken)
     {
-        var ts = Stopwatch.GetTimestamp();
-        var data = await _db.FilteredDeliveries.ToListAsync(cancellationToken: cancellationToken);
-        var te = Stopwatch.GetElapsedTime(ts);
-        
-        _logger.LogInformation("Filtered data fetched in {timeElapsed} ms", te);
-
+        List<FilteredDelivery> data;
+        using(var activity = _activitySource.StartActivity("GetFilteredData"))
+        {
+            data = await _db.FilteredDeliveries.ToListAsync(cancellationToken: cancellationToken);
+        }
         await _endpoint.Publish(new SomeData(), cancellationToken);
         
         return Ok(data);

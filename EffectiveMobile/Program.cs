@@ -43,7 +43,9 @@ public class Program
                     .AddHttpClientInstrumentation()
                     .AddEntityFrameworkCoreInstrumentation(c => c.SetDbStatementForText = true)
                     .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName);
-                
+                    // .AddSource("EffectiveMobile.FiltrationController")
+                    // .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        // .AddService(serviceName: "EffectiveMobile.FiltrationController"));
                 tracing.AddOtlpExporter(c =>
                 {
                     c.Endpoint = new Uri(builder.Configuration["JAEGER_AGENT_HOST"]!);
@@ -88,6 +90,7 @@ public class Program
         app.UseHttpMetrics();
         // обязательно после!
         app.UseExceptionHandler();
+        app.MapHealthChecks("/health");
         app.MapControllers();
         app.MapMetrics();
         

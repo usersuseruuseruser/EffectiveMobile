@@ -13,7 +13,7 @@
       elasticsearch:
         condition: service_healthy
     environment:
-        - ConnectionStrings__DefaultConnection=Host=db;Database=postgres;Username=postgres;Password=postgres;Maximum Pool Size=300
+        - ConnectionStrings__DefaultConnection=Host=db;Database=postgres;Username=postgres;Password=postgres;Maximum Pool Size=500
         - ElasticsearchUrl=http://elasticsearch:9200
         - JAEGER_AGENT_HOST=http://jaeger:4317
   effectivemobile-second:
@@ -65,6 +65,7 @@
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
   timescaledb:
+    container_name: timescaledb
     image: timescale/timescaledb:2.14.2-pg16
     command: postgres -c 'max_connections=300'
     restart: always
@@ -83,6 +84,7 @@
       retries: 5
       start_period: 5s
   nbomber-studio:
+    container_name: nbomber-studio
     image: nbomberdocker/nbomber-studio:latest
     ports:
       - "5333:8080"
@@ -90,8 +92,9 @@
       timescaledb:
         condition: service_healthy
     environment:
-      DBSETTINGS:CONNECTIONSTRING: "Host=timescaledb;Port=5432;Username=timescaledb;Password=timescaledb;Database=nb_studio_db;Pooling=true;"
+      DBSETTINGS:CONNECTIONSTRING: "Host=timescaledb;Port=5432;Username=timescaledb;Password=timescaledb;Database=nb_studio_db;Pooling=true;Maximum Pool Size=500"
   prometheus:
+    container_name: prometheus
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
@@ -100,6 +103,7 @@
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'   
   grafana:
+    container_name: grafana
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
@@ -108,12 +112,22 @@
     volumes:
       - grafana-data:/var/lib/grafana
   jaeger:
+    container_name: jaeger
     image: jaegertracing/all-in-one:latest
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - ES_SERVER_URL=http://elasticsearch:9200
     ports:
       - "16686:16686"
       - "4317:4317"
       - "4318:4318"
+      - "9411:9411"
+    depends_on:
+      elasticsearch:
+        condition:
+          service_healthy
   rabbitmq:
+    container_name: rabbitmq
     image: heidiks/rabbitmq-delayed-message-exchange:latest
     environment:
       - RABBITMQ_DEFAULT_USER=admin
