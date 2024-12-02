@@ -32,8 +32,12 @@ public class Program
             {
                 var client1 = new HttpClient();
                 var client2 = new HttpClient();
+                var client3 = new HttpClient();
+                var client4 = new HttpClient();
                 clientPool.AddClient(client1);
                 clientPool.AddClient(client2);
+                clientPool.AddClient(client3);
+                clientPool.AddClient(client4);
                 
                 return Task.CompletedTask;
             })

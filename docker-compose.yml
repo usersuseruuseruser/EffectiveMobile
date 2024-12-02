@@ -53,7 +53,7 @@
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9200/_cat/health" ]
       interval: 3s
-      timeout: 10s
+      timeout: 20s
       retries: 10
   kibana:
     container_name: kibana
@@ -98,6 +98,8 @@
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
+    environment:
+      - --enable-feature=exemplar-storage
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     command:
@@ -116,7 +118,7 @@
     image: jaegertracing/all-in-one:latest
     environment:
       - SPAN_STORAGE_TYPE=elasticsearch
-      - ES_SERVER_URL=http://elasticsearch:9200
+      - ES_SERVER_URLS=http://elasticsearch:9200
     ports:
       - "16686:16686"
       - "4317:4317"

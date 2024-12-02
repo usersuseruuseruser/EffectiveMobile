@@ -67,10 +67,7 @@ public class FiltrationController: ControllerBase
     public async  Task<IActionResult> HelloWorld(CancellationToken cancellationToken)
     {
         List<FilteredDelivery> data;
-        using(var activity = _activitySource.StartActivity("GetFilteredData"))
-        {
-            data = await _db.FilteredDeliveries.ToListAsync(cancellationToken: cancellationToken);
-        }
+        data = await _db.FilteredDeliveries.ToListAsync(cancellationToken: cancellationToken);
         await _endpoint.Publish(new SomeData(), cancellationToken);
         
         return Ok(data);
@@ -117,24 +114,18 @@ public class FiltrationController: ControllerBase
 
         await Task.WhenAll(googleTask, microsoftTask);
 
-        // выглядит как говнокод но функции для работы с метриками могут работать ТОЛЬКО 
-        // с уникальным объектом, причем уже использованный клонировать нельзя
         var exemplar1 = Exemplar.FromTraceContext();
-        var exemplar2 = exemplar1.Clone();
-        var exemplar3 = exemplar1.Clone();
-        var exemplar4 = exemplar1.Clone();
-        var exemplar5 = exemplar1.Clone();
         
         // Determine the winner and report the change in score.
         if (googleStopwatch.Elapsed < microsoftStopwatch.Elapsed)
         {
-            WinsByEndpoint.WithLabels(googleUrl).Inc(exemplar1);
-            LossesByEndpoint.WithLabels(microsoftUrl).Inc(exemplar2);
+            WinsByEndpoint.WithLabels(googleUrl).Inc();
+            LossesByEndpoint.WithLabels(microsoftUrl).Inc();
         }
         else if (googleStopwatch.Elapsed > microsoftStopwatch.Elapsed)
         {
-            WinsByEndpoint.WithLabels(microsoftUrl).Inc(exemplar3);
-            LossesByEndpoint.WithLabels(googleUrl).Inc(exemplar4);
+            WinsByEndpoint.WithLabels(microsoftUrl).Inc();
+            LossesByEndpoint.WithLabels(googleUrl).Inc();
         }
         else
         {
@@ -143,7 +134,7 @@ public class FiltrationController: ControllerBase
 
         // Report the difference.
         var difference = Math.Abs(googleStopwatch.Elapsed.TotalSeconds - microsoftStopwatch.Elapsed.TotalSeconds);
-        Difference.Observe(difference, exemplar: exemplar5);
+        Difference.Observe(difference, exemplar: exemplar1);
 
         // We finished one iteration of the service's work.
         IterationCount.Inc();

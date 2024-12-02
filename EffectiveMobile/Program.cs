@@ -90,8 +90,9 @@ public class Program
         app.UseHttpMetrics();
         // обязательно после!
         app.UseExceptionHandler();
-        app.MapHealthChecks("/health");
+        
         app.MapControllers();
+        app.MapHealthChecks("/health");
         app.MapMetrics();
         
         app.Run();
